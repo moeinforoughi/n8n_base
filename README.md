@@ -17,7 +17,9 @@ You need the following installed:
 ### A. Configure Environment Variables
 
 1.  Copy the example environment file:
+```bash
     cp .env.example .env
+```
 
 2.  **Edit the .env file** to set your desired values.
     * **Mandatory:** At minimum, set your N8N_HOST and consider setting a strong N8N_SECURITY_SALT.
@@ -36,14 +38,23 @@ If you are using **Docker Volumes** (docker-compose.vol.yml), you can **skip thi
 If you are using **Bind Mounts** (docker-compose.bind.yml), you must create and secure the directories:
 
 1.  Create the necessary directories:
+
+```bash
     mkdir -p data local-files
+```
 
 2.  Set the correct ownership (ensures the n8n user inside the container can write to the host):
     # The container runs as UID 1000 by default, so we set the host directories to match
+
+```bash
     sudo chown -R 1000:1000 data local-files
+```
 
 3.  Set permissions:
+
+```bash
     chmod -R 755 data local-files
+```
 
 ## 4. Running n8n with Docker Compose
 
@@ -51,13 +62,15 @@ Choose your preferred storage method:
 
 ### A. Run with Docker Volumes (Recommended)
 Persistent data is managed by Docker in a named volume, which is usually simpler.
-
+```bash
 docker compose -f docker-compose.vol.yml up -d
-
+```
 ### B. Run with Bind Mounts
 Persistent data is stored in the data and local-files directories next to your docker-compose.bind.yml file.
 
+```bash
 docker compose -f docker-compose.bind.yml up -d
+```
 
 ## 5. Accessing n8n
 
