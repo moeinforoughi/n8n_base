@@ -18,7 +18,7 @@ You need the following installed:
 
 1.  Copy the example environment file:
 ```bash
-    cp .env.example .env
+cp .env.example .env
 ```
 
 2.  **Edit the .env file** to set your desired values.
@@ -40,20 +40,20 @@ If you are using **Bind Mounts** (docker-compose.bind.yml), you must create and 
 1.  Create the necessary directories:
 
 ```bash
-    mkdir -p data local-files
+mkdir -p data local-files
 ```
 
 2.  Set the correct ownership (ensures the n8n user inside the container can write to the host):
-    # The container runs as UID 1000 by default, so we set the host directories to match
+    * The container runs as UID 1000 by default, so we set the host directories to match
 
 ```bash
-    sudo chown -R 1000:1000 data local-files
+sudo chown -R 1000:1000 data local-files
 ```
 
 3.  Set permissions:
 
 ```bash
-    chmod -R 755 data local-files
+chmod -R 755 data local-files
 ```
 
 ## 4. Running n8n with Docker Compose
