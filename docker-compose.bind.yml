@@ -1,0 +1,18 @@
+version: '3.8'
+
+services:
+  n8n:
+    image: docker.n8n.io/n8nio/n8n:1.116.2
+    # Load environment variables from .env file
+    env_file:
+      - .env
+    # Recommended: Set a strong restart policy
+    restart: unless-stopped
+    ports:
+      # Maps host port (N8N_PORT from .env) to container port (N8N_PORT from .env)
+      - "${N8N_PORT}:${N8N_PORT}"
+    volumes:
+      # Binds the local 'data' directory to the n8n config folder
+      - ./data:/home/node/.n8n
+      # Binds the local 'local-files' directory for file storage
+      - ./local-files:/files

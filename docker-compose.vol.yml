@@ -1,0 +1,22 @@
+version: '3.8'
+
+services:
+  n8n:
+    image: docker.n8n.io/n8nio/n8n:1.116.2
+    # Load environment variables from .env file
+    env_file:
+      - .env
+    # Recommended: Set a strong restart policy
+    restart: unless-stopped
+    ports:
+      # Maps host port (N8N_PORT from .env) to container port (N8N_PORT from .env)
+      - "${N8N_PORT}:${N8N_PORT}"
+    volumes:
+      # n8n database and credentials
+      - n8n-data:/home/node/.n8n
+      # Storage for files handled by the 'Move Binary Data' node and others
+      - n8n-localfiles:/files
+    
+volumes:
+  n8n-data:
+  n8n-localfiles:
