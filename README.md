@@ -22,7 +22,7 @@ cp .env.example .env
 ```
 
 2.  **Edit the .env file** to set your desired values.
-    * **Mandatory:** At minimum, set your N8N_HOST and consider setting a strong N8N_SECURITY_SALT.
+    * **Mandatory:** At minimum, set your N8N_HOST 
     * **Recommendation:** For production, uncomment and set N8N_EDITOR_BASE_URL and WEBHOOK_URL.
 
 ### B. Setting the n8n Version

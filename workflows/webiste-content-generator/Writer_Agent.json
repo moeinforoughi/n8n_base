@@ -1,0 +1,779 @@
+{
+  "name": "Writer Agent",
+  "nodes": [
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "value": "ai/gpt-oss:20B-MXFP4",
+          "mode": "list",
+          "cachedResultName": "ai/gpt-oss:20B-MXFP4"
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.2,
+      "position": [
+        864,
+        248
+      ],
+      "id": "abb1832c-da2c-42f5-a344-c71e24bb532a",
+      "name": "Local Model1",
+      "credentials": {
+        "openAiApi": {
+          "id": "iC5A2vdrhr3iwsfW",
+          "name": "OpenAi account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "html": "{{ $json.htmk }}"
+      },
+      "type": "n8n-nodes-base.html",
+      "typeVersion": 1.2,
+      "position": [
+        1552,
+        -96
+      ],
+      "id": "43f030d0-0ca1-45a5-8bdf-b51da5d7f76a",
+      "name": "HTML"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=topic :\n{{ $json.topic_title }}",
+        "options": {
+          "systemMessage": "You are a senior AI research writer. Your job is to write accurate, readable, and engaging technology articles based on a provided topic. You must use the available tools to gather essential information, but keep research light and efficient. Do not invent facts.\n\n------------------------------\nRESEARCH RULES (FAST MODE)\n------------------------------\n1. Break the topic into 2–3 core questions.\n2. Generate 1–2 short search queries.\n3. Run Google searches for ONLY these queries.\n4. Select ONE highly relevant and credible URL from the results.\n5. Scrape ONLY that URL.\n6. Extract the key points needed for context: definitions, mechanisms, examples, expert viewpoints.\n7. If information is still insufficient, scrape ONE additional related URL and stop.\n8. Keep research minimal—prioritize speed over depth, but accuracy over speculation.\n\n------------------------------\nWRITING RULES\n------------------------------\n1. Article length: ~800–1,200 words (compact, SEO-friendly).\n2. Write for intelligent general readers.\n3. Rephrase everything—never copy text from sources.\n4. Use clear headers and a logical flow.\n5. Keep the tone factual, analytical, and engaging.\n6. Avoid filler, clichés, generic statements, and keyword stuffing.\n7. If something is speculative, use careful language (“could”, “may”).\n\n------------------------------\nOUTPUT FORMAT\n------------------------------\n- Output clean Markdown only.\n- Use `#`, `##`, `###` for headers.\n- Use bullet points, numbered lists, bold, italics, and quotes naturally.\n- No HTML, no code blocks, no reflections, no tool logs.\n\n------------------------------\nGOAL\n------------------------------\nProduce a high-quality, magazine-style article based on minimal but accurate research. Prioritize speed, clarity, and usefulness without overloading the model. The input will always be the topic.\n"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 2.2,
+      "position": [
+        920,
+        24
+      ],
+      "id": "3612a013-1423-4b4f-82a8-8fb07f853376",
+      "name": "AI Agent"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "typeVersion": 1,
+      "position": [
+        -32,
+        468
+      ],
+      "id": "64e01b50-9aa6-4c94-93b0-647e72d5f22a",
+      "name": "My Gemeni API",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "X6YVhE0LnnFGuRCi",
+          "name": "Google Gemini(PaLM) Api account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "workflowInputs": {
+          "values": [
+            {
+              "name": "website_id",
+              "type": "number"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.executeWorkflowTrigger",
+      "typeVersion": 1.1,
+      "position": [
+        -32,
+        148
+      ],
+      "id": "44c0a41a-23eb-4bd9-8e94-42ddeee9c09f",
+      "name": "When Executed by Another Workflow"
+    },
+    {
+      "parameters": {
+        "operation": "select",
+        "schema": {
+          "__rl": true,
+          "mode": "list",
+          "value": "public"
+        },
+        "table": {
+          "__rl": true,
+          "value": "topics",
+          "mode": "list",
+          "cachedResultName": "topics"
+        },
+        "limit": 1,
+        "where": {
+          "values": [
+            {
+              "column": "status",
+              "value": "new"
+            },
+            {
+              "column": "website_id",
+              "value": "={{ $json.website_id }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        416,
+        148
+      ],
+      "id": "e667ff02-41be-4a76-82b8-2451bcb5a3ac",
+      "name": "Select rows from a table",
+      "alwaysOutputData": true,
+      "credentials": {
+        "postgres": {
+          "id": "t3hKlULDb21z3SfV",
+          "name": "Postgres account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "schema": {
+          "__rl": true,
+          "mode": "list",
+          "value": "public"
+        },
+        "table": {
+          "__rl": true,
+          "value": "articles",
+          "mode": "list",
+          "cachedResultName": "articles"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "topic_id": "={{ $('Select rows from a table').item.json.id }}",
+            "website_id": "={{ $('Select rows from a table').item.json.website_id }}",
+            "content_markdown": "={{ $json.output }}",
+            "content_html": "={{ $json.htmk }}",
+            "status": "new"
+          },
+          "matchingColumns": [
+            "id"
+          ],
+          "schema": [
+            {
+              "id": "id",
+              "displayName": "id",
+              "required": false,
+              "defaultMatch": true,
+              "display": true,
+              "type": "number",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "topic_id",
+              "displayName": "topic_id",
+              "required": true,
+              "defaultMatch": false,
+              "display": true,
+              "type": "number",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "website_id",
+              "displayName": "website_id",
+              "required": true,
+              "defaultMatch": false,
+              "display": true,
+              "type": "number",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "content_markdown",
+              "displayName": "content_markdown",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "content_html",
+              "displayName": "content_html",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "meta_title",
+              "displayName": "meta_title",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "meta_description",
+              "displayName": "meta_description",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "status",
+              "displayName": "status",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "internal_links",
+              "displayName": "internal_links",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "object",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "published_url",
+              "displayName": "published_url",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "created_at",
+              "displayName": "created_at",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "dateTime",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "updated_at",
+              "displayName": "updated_at",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "dateTime",
+              "canBeUsedToMatch": true,
+              "removed": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        1552,
+        120
+      ],
+      "id": "3cfecf55-20ea-4d43-a141-f6c2686c9e19",
+      "name": "Insert rows in a table",
+      "credentials": {
+        "postgres": {
+          "id": "t3hKlULDb21z3SfV",
+          "name": "Postgres account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "mode": "markdownToHtml",
+        "markdown": "={{ $json.output }}",
+        "destinationKey": "htmk",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.markdown",
+      "typeVersion": 1,
+      "position": [
+        1328,
+        -48
+      ],
+      "id": "e3fbf6f9-be1e-4ecb-9e9e-f05f7d3b68f4",
+      "name": "Markdown"
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "schema": {
+          "__rl": true,
+          "mode": "list",
+          "value": "public"
+        },
+        "table": {
+          "__rl": true,
+          "value": "topics",
+          "mode": "list",
+          "cachedResultName": "topics"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "id": "={{ $json.topic_id }}",
+            "status": "written"
+          },
+          "matchingColumns": [
+            "id"
+          ],
+          "schema": [
+            {
+              "id": "id",
+              "displayName": "id",
+              "required": false,
+              "defaultMatch": true,
+              "display": true,
+              "type": "number",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "website_id",
+              "displayName": "website_id",
+              "required": true,
+              "defaultMatch": false,
+              "display": true,
+              "type": "number",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "topic_title",
+              "displayName": "topic_title",
+              "required": true,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "slug",
+              "displayName": "slug",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "status",
+              "displayName": "status",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "priority",
+              "displayName": "priority",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "number",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "created_at",
+              "displayName": "created_at",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "dateTime",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "updated_at",
+              "displayName": "updated_at",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "dateTime",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "keywords_used",
+              "displayName": "keywords_used",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "object",
+              "canBeUsedToMatch": true,
+              "removed": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        1776,
+        120
+      ],
+      "id": "ede4c790-ce3a-42e9-b334-492906971f4f",
+      "name": "Update rows in a table",
+      "credentials": {
+        "postgres": {
+          "id": "t3hKlULDb21z3SfV",
+          "name": "Postgres account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "function getRandomNumber(min, max) {\n  return Math.floor(Math.random() * (max - min + 1)) + min;\n}\n\nconst randomNum = getRandomNumber(15, 60);\n\nreturn [\n  {\n    json: {\n      data: randomNum\n    }\n  }\n];\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        2000,
+        120
+      ],
+      "id": "bbf67a5a-5ae0-4c9b-9bb7-dbc47c3bb8cd",
+      "name": "Code in JavaScript"
+    },
+    {
+      "parameters": {
+        "amount": "={{ $json.data }}",
+        "unit": "minutes"
+      },
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [
+        2224,
+        244
+      ],
+      "id": "d964ac96-e2b7-4183-af33-5e42e4d7e7c2",
+      "name": "Wait",
+      "webhookId": "9cfb6e49-30ff-4920-a934-f2f9cbd3816b"
+    },
+    {
+      "parameters": {
+        "toolDescription": "Use this tool to search for a topic or keyword on Google. You must provide the search query and optional localization parameters in JSON format.\nJSON format:\n{\n  \"q\": \"title or keyword to search\",\n  \"gl\": \"country code (e.g., 'us' for United States)\",\n  \"hl\": \"language code (e.g., 'en' for English)\"\n}\nExample: searching for \"AI trends\" in English in the US would be:\n{\n  \"q\": \"AI trends\",\n  \"gl\": \"us\",\n  \"hl\": \"en\"\n}\n",
+        "method": "POST",
+        "url": "https://google.serper.dev/search",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "X-API-KEY",
+              "value": "86a027b30e518f20a98116775b067df6f4b0620d"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('JSON', ``, 'json') }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequestTool",
+      "typeVersion": 4.2,
+      "position": [
+        992,
+        248
+      ],
+      "id": "053d02e2-1999-4370-8e78-dd1dccad4f6d",
+      "name": "google search"
+    },
+    {
+      "parameters": {
+        "toolDescription": "Use this tool to extract textual content from a webpage.",
+        "url": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('URL', `format :\nhttps://r.jina.ai/YOUR_URL`, 'string') }}",
+        "options": {
+          "response": {
+            "response": {
+              "neverError": true
+            }
+          }
+        },
+        "optimizeResponse": true,
+        "responseType": "html",
+        "onlyContent": true,
+        "elementsToOmit": "img,class,style,header,footer",
+        "truncateResponse": true,
+        "maxLength": 10000
+      },
+      "type": "n8n-nodes-base.httpRequestTool",
+      "typeVersion": 4.2,
+      "position": [
+        1120,
+        248
+      ],
+      "id": "39116fb9-5e01-4812-a9bc-4638aab635c1",
+      "name": "web scraper"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "5cd75a82-744c-4e50-a3ab-69c2216ddc12",
+              "leftValue": "={{ $json.topic_title }}",
+              "rightValue": "",
+              "operator": {
+                "type": "string",
+                "operation": "exists",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        640,
+        24
+      ],
+      "id": "b87f33df-fe13-4f03-a9a8-eb67041d4f52",
+      "name": "If"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "f982ff91-39e1-4865-b7a1-b182a9945cd3",
+              "name": "website_id",
+              "value": "={{ $json.website_id }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        192,
+        148
+      ],
+      "id": "afd7ed52-1594-4caa-9fd4-183503604c78",
+      "name": "Edit Fields"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Local Model1": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent": {
+      "main": [
+        [
+          {
+            "node": "Insert rows in a table",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Markdown",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "My Gemeni API": {
+      "ai_languageModel": [
+        []
+      ]
+    },
+    "When Executed by Another Workflow": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Select rows from a table": {
+      "main": [
+        [
+          {
+            "node": "If",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTML": {
+      "main": [
+        []
+      ]
+    },
+    "Markdown": {
+      "main": [
+        [
+          {
+            "node": "HTML",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Insert rows in a table",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Insert rows in a table": {
+      "main": [
+        [
+          {
+            "node": "Update rows in a table",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Update rows in a table": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code in JavaScript": {
+      "main": [
+        [
+          {
+            "node": "Wait",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Wait": {
+      "main": [
+        [
+          {
+            "node": "Select rows from a table",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "google search": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "web scraper": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If": {
+      "main": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        []
+      ]
+    },
+    "Edit Fields": {
+      "main": [
+        [
+          {
+            "node": "Select rows from a table",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "e6fe108f-29be-4a1a-9910-107f119a79a4",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "c32ffc6917bdaec08035322d3990e13b4a8afc3198e79520397977dc90cc3b05"
+  },
+  "id": "UPFg0QgJK1cuHnBP",
+  "tags": []
+}

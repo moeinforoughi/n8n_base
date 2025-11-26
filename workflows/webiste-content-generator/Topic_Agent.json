@@ -1,0 +1,1036 @@
+{
+  "name": "Topic Agent",
+  "nodes": [
+    {
+      "parameters": {
+        "workflowInputs": {
+          "values": [
+            {
+              "name": "website_id",
+              "type": "number"
+            },
+            {
+              "name": "topic_count",
+              "type": "number"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.executeWorkflowTrigger",
+      "typeVersion": 1.1,
+      "position": [
+        -1376,
+        -176
+      ],
+      "id": "a14b2906-42b7-48ce-920b-38339b4e2432",
+      "name": "When Executed by Another Workflow"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "73607508-1169-431e-ba60-a3e869218526",
+              "name": "website_id",
+              "value": "={{ $json.website_id }}",
+              "type": "number"
+            },
+            {
+              "id": "aeb87f5b-a8de-4aab-820b-075d5cabb3d6",
+              "name": "topic_count",
+              "value": "={{ $json.topic_count }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -1152,
+        -176
+      ],
+      "id": "471ab6c0-0228-4622-8194-31d73ddf0379",
+      "name": "Edit Fields"
+    },
+    {
+      "parameters": {
+        "operation": "select",
+        "schema": {
+          "__rl": true,
+          "mode": "list",
+          "value": "public"
+        },
+        "table": {
+          "__rl": true,
+          "value": "keywords",
+          "mode": "list",
+          "cachedResultName": "keywords"
+        },
+        "returnAll": true,
+        "where": {
+          "values": [
+            {
+              "column": "website_id",
+              "value": "={{ $('Edit Fields').item.json.website_id }}"
+            },
+            {
+              "column": "usage_count",
+              "condition": "<",
+              "value": "3"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        -256,
+        -256
+      ],
+      "id": "c88d0d36-3946-452f-a230-58c7df6f6c16",
+      "name": "Select rows from a table",
+      "alwaysOutputData": true,
+      "credentials": {
+        "postgres": {
+          "id": "t3hKlULDb21z3SfV",
+          "name": "Postgres account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=Website name:\n{{ $('Select rows from a table1').last().json.name }}\nwebsite description:\n{{ $('Select rows from a table1').last().json.description }}\nkeywords:\n{{ $json.keywords }}",
+        "hasOutputParser": true,
+        "options": {
+          "systemMessage": "You are an SEO content planner for AI-related websites.\n\nInstructions:\n1. Generate 1 article topic that is creative, actionable, and realistic to write about.\n2. Use **only the provided keywords** and the website name/description.\n3. Use **exactly 2–3 keywords per topic**. Avoid using all keywords at once.\n4. Keep the topic **concise, clear, and human-readable** (around 8–15 words).\n5. Avoid generic buzzwords and overly formal marketing phrases.\n6. Do **not invent unrelated companies, locations, or concepts**.\n7. Focus on making the topic **practical for writing an article**.\n8. Output the topic in JSON format exactly like this:\n\n[\n  {\n    \"topic_title\": \"Concise, actionable article topic\",\n    \"keywords_used\": [\"keyword1\", \"keyword2\", ...]\n  }\n]"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 2.2,
+      "position": [
+        1088,
+        -352
+      ],
+      "id": "f0f0ade8-43ba-44c0-b8a0-054e43ae4a65",
+      "name": "AI Agent"
+    },
+    {
+      "parameters": {
+        "type": "random"
+      },
+      "type": "n8n-nodes-base.sort",
+      "typeVersion": 1,
+      "position": [
+        192,
+        -352
+      ],
+      "id": "03e6e6ce-d686-452c-90c3-b17680e41430",
+      "name": "Sort"
+    },
+    {
+      "parameters": {
+        "maxItems": 5
+      },
+      "type": "n8n-nodes-base.limit",
+      "typeVersion": 1,
+      "position": [
+        416,
+        -352
+      ],
+      "id": "d76a318d-535f-41ad-a2de-7585f875b71e",
+      "name": "Limit"
+    },
+    {
+      "parameters": {
+        "operation": "select",
+        "schema": {
+          "__rl": true,
+          "mode": "list",
+          "value": "public"
+        },
+        "table": {
+          "__rl": true,
+          "value": "websites",
+          "mode": "list",
+          "cachedResultName": "websites"
+        },
+        "limit": 1,
+        "where": {
+          "values": [
+            {
+              "column": "id",
+              "value": "={{ $json.website_id }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        -928,
+        -176
+      ],
+      "id": "ff16e7ad-5d95-46b6-953f-3c0584e5897e",
+      "name": "Select rows from a table1",
+      "credentials": {
+        "postgres": {
+          "id": "t3hKlULDb21z3SfV",
+          "name": "Postgres account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "3180e830-676e-4187-b0dd-cf3c7e469f88",
+              "name": "keyword",
+              "value": "={{ $json.keyword }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        640,
+        -352
+      ],
+      "id": "bcec4370-9d61-4c92-8871-567454f8e03d",
+      "name": "Edit Fields1"
+    },
+    {
+      "parameters": {
+        "fieldsToAggregate": {
+          "fieldToAggregate": [
+            {
+              "fieldToAggregate": "keyword",
+              "renameField": true,
+              "outputFieldName": "keywords"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.aggregate",
+      "typeVersion": 1,
+      "position": [
+        864,
+        -352
+      ],
+      "id": "79baa5dc-ba6d-4446-b9a3-3e7a307856c3",
+      "name": "Aggregate"
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "value": "ai/gpt-oss:20B-MXFP4",
+          "mode": "list",
+          "cachedResultName": "ai/gpt-oss:20B-MXFP4"
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.2,
+      "position": [
+        1220,
+        80
+      ],
+      "id": "2637cde5-dec0-4350-8484-7da5cd9849d9",
+      "name": "Local Model",
+      "credentials": {
+        "openAiApi": {
+          "id": "iC5A2vdrhr3iwsfW",
+          "name": "OpenAi account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsonSchemaExample": "  {\n    \"topic_title\": \"Topic Title Here\",\n    \"keywords_used\": [\n      \"keyword1\",\n      \"keyword2\",\n      \"...\"\n    ]\n  }",
+        "autoFix": true
+      },
+      "type": "@n8n/n8n-nodes-langchain.outputParserStructured",
+      "typeVersion": 1.3,
+      "position": [
+        1288,
+        -128
+      ],
+      "id": "f4bab3a9-c324-4e50-afbe-ff027ec4b7d9",
+      "name": "Structured Output Parser"
+    },
+    {
+      "parameters": {
+        "schema": {
+          "__rl": true,
+          "mode": "list",
+          "value": "public"
+        },
+        "table": {
+          "__rl": true,
+          "value": "topics",
+          "mode": "list",
+          "cachedResultName": "topics"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "website_id": "={{ $('Select rows from a table1').item.json.id }}",
+            "topic_title": "={{ $json.topic_title }}",
+            "slug": "={{ $json.slug }}",
+            "keywords_used": "={{ $json.keywords_used }}"
+          },
+          "matchingColumns": [
+            "id"
+          ],
+          "schema": [
+            {
+              "id": "id",
+              "displayName": "id",
+              "required": false,
+              "defaultMatch": true,
+              "display": true,
+              "type": "number",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "website_id",
+              "displayName": "website_id",
+              "required": true,
+              "defaultMatch": false,
+              "display": true,
+              "type": "number",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "topic_title",
+              "displayName": "topic_title",
+              "required": true,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "slug",
+              "displayName": "slug",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "status",
+              "displayName": "status",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "priority",
+              "displayName": "priority",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "number",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "created_at",
+              "displayName": "created_at",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "dateTime",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "updated_at",
+              "displayName": "updated_at",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "dateTime",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "keywords_used",
+              "displayName": "keywords_used",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "object",
+              "canBeUsedToMatch": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        1880,
+        -352
+      ],
+      "id": "b79165cd-3672-4324-9da4-e5689a961111",
+      "name": "Insert rows in a table",
+      "credentials": {
+        "postgres": {
+          "id": "t3hKlULDb21z3SfV",
+          "name": "Postgres account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "// Get the topic title from the previous node\nconst topicTitle = $input.first().json.output.topic_title;\n\n// Generate slug\nconst slug = topicTitle.toLowerCase()\n    .replace(/[^a-z0-9]+/g, '-')\n    .replace(/^-|-$/g, '');\n\n// Extract raw keywords\nlet raw = $input.first().json.output.keywords_used;\n\n// Force flatten into a real array\nlet arr = [];\n\nif (Array.isArray(raw)) {\n    arr = raw.flat(Infinity).map(v => String(v).trim());\n} else if (typeof raw === \"string\") {\n    arr = raw.split(\",\").map(s => s.trim());\n} else {\n    arr = [];\n}\n\n// Build the EXACT structure you want:\nconst keywordsUsed = {\n    keywords: arr\n};\n\n// Return result\nreturn [\n    {\n        json: {\n            topic_title: topicTitle,\n            slug: slug,\n            keywords_used: keywordsUsed\n        }\n    }\n];\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1656,
+        -352
+      ],
+      "id": "189294fd-0d63-4b97-b350-0d91d8a88c24",
+      "name": "Code in JavaScript"
+    },
+    {
+      "parameters": {
+        "operation": "select",
+        "schema": {
+          "__rl": true,
+          "mode": "list",
+          "value": "public"
+        },
+        "table": {
+          "__rl": true,
+          "value": "keywords",
+          "mode": "list",
+          "cachedResultName": "keywords"
+        },
+        "returnAll": true,
+        "where": {
+          "values": [
+            {
+              "column": "keyword",
+              "value": "={{ $json['keywords_used.keywords'] }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        2552,
+        -544
+      ],
+      "id": "040d08ed-97bb-41c8-affa-8f7a363851a4",
+      "name": "Select rows from a table2",
+      "credentials": {
+        "postgres": {
+          "id": "t3hKlULDb21z3SfV",
+          "name": "Postgres account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "options": {
+          "reset": "={{ $node['Loop Over Items1'].context[\"done\"] }}"
+        }
+      },
+      "type": "n8n-nodes-base.splitInBatches",
+      "typeVersion": 3,
+      "position": [
+        2328,
+        -352
+      ],
+      "id": "eaca6092-3a5c-476a-aef8-03cbf2002144",
+      "name": "Loop Over Items1"
+    },
+    {
+      "parameters": {
+        "fieldToSplitOut": "keywords_used.keywords",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.splitOut",
+      "typeVersion": 1,
+      "position": [
+        2104,
+        -352
+      ],
+      "id": "f48af545-a8e1-4f93-9052-9f0a47035b65",
+      "name": "Split Out1"
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "schema": {
+          "__rl": true,
+          "mode": "list",
+          "value": "public"
+        },
+        "table": {
+          "__rl": true,
+          "value": "keywords",
+          "mode": "list",
+          "cachedResultName": "keywords"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "keyword": "={{ $json.keyword }}",
+            "last_used_at": "={{ $now }}",
+            "usage_count": "={{ $json.usage_count + 1}} "
+          },
+          "matchingColumns": [
+            "keyword"
+          ],
+          "schema": [
+            {
+              "id": "id",
+              "displayName": "id",
+              "required": false,
+              "defaultMatch": true,
+              "display": true,
+              "type": "number",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "website_id",
+              "displayName": "website_id",
+              "required": true,
+              "defaultMatch": false,
+              "display": true,
+              "type": "number",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "keyword",
+              "displayName": "keyword",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "source",
+              "displayName": "source",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "created_at",
+              "displayName": "created_at",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "dateTime",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "usage_count",
+              "displayName": "usage_count",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "number",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "last_used_at",
+              "displayName": "last_used_at",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "dateTime",
+              "canBeUsedToMatch": true,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        2776,
+        -448
+      ],
+      "id": "4b963af7-521c-4c73-895b-906bf46f920b",
+      "name": "Update rows in a table",
+      "credentials": {
+        "postgres": {
+          "id": "t3hKlULDb21z3SfV",
+          "name": "Postgres account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "descriptionType": "manual",
+        "toolDescription": "You could get the generated topics from this DB",
+        "operation": "select",
+        "schema": {
+          "__rl": true,
+          "mode": "list",
+          "value": "public"
+        },
+        "table": {
+          "__rl": true,
+          "value": "topics",
+          "mode": "list",
+          "cachedResultName": "topics"
+        },
+        "returnAll": true,
+        "options": {}
+      },
+      "type": "n8n-nodes-base.postgresTool",
+      "typeVersion": 2.6,
+      "position": [
+        1160,
+        -128
+      ],
+      "id": "d15b5591-003b-4f48-a116-7ca2fb0ed16f",
+      "name": "Select rows from a table in Postgres",
+      "credentials": {
+        "postgres": {
+          "id": "t3hKlULDb21z3SfV",
+          "name": "Postgres account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "amount": "={{ $json.data }}",
+        "unit": "minutes"
+      },
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [
+        2776,
+        -176
+      ],
+      "id": "40de598c-ac94-4817-b407-60117d21e9e7",
+      "name": "Wait",
+      "webhookId": "9990a1ca-d880-4988-98b8-2f48a483ee34"
+    },
+    {
+      "parameters": {
+        "jsCode": "function getRandomNumber(min, max) {\n  return Math.floor(Math.random() * (max - min + 1)) + min;\n}\n\nconst randomNum = getRandomNumber(15, 60);\n\nreturn [\n  {\n    json: {\n      data: randomNum\n    }\n  }\n];\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        2552,
+        -352
+      ],
+      "id": "89d7e9eb-1b16-46ad-8db0-ca5063029890",
+      "name": "Code in JavaScript1"
+    },
+    {
+      "parameters": {
+        "chatId": "918594803",
+        "text": "=Website with this ID is out of keywords\n{{ $('Select rows from a table').item.json.website_id }}",
+        "additionalFields": {
+          "appendAttribution": false
+        }
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        192,
+        -160
+      ],
+      "id": "8bbf9633-2373-4378-9122-e5cb8bb0267b",
+      "name": "Send a text message",
+      "webhookId": "bfd72db1-b7fa-48a5-9727-bad1da01220f",
+      "credentials": {
+        "telegramApi": {
+          "id": "Z6aMMAQUIYi0k2qT",
+          "name": "Telegram account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "36b438a7-01ff-48c7-ad01-8f1d46665b20",
+              "leftValue": "={{ $json.keyword }}",
+              "rightValue": "",
+              "operator": {
+                "type": "string",
+                "operation": "exists",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        -32,
+        -256
+      ],
+      "id": "1eded803-6c60-4b17-95ed-37053e274830",
+      "name": "If1"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "n8n-nodes-base.splitInBatches",
+      "typeVersion": 3,
+      "position": [
+        -480,
+        -176
+      ],
+      "id": "aabf0973-c3da-453c-a70e-c303faeaef2b",
+      "name": "Loop Over Items"
+    },
+    {
+      "parameters": {
+        "jsCode": "const count = $('Edit Fields').first().json.topic_count;\n\nconst items = [];\n\nfor (let i = 1; i <= count; i++) {\n  items.push({\n    json: {\n      iteration: i\n    }\n  });\n}\n\nreturn items;\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -704,
+        -176
+      ],
+      "id": "cf163f7d-b3a3-4249-9c82-cad351e87f2f",
+      "name": "Code in JavaScript2"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "When Executed by Another Workflow": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields": {
+      "main": [
+        [
+          {
+            "node": "Select rows from a table1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Select rows from a table": {
+      "main": [
+        [
+          {
+            "node": "If1",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        []
+      ]
+    },
+    "Sort": {
+      "main": [
+        [
+          {
+            "node": "Limit",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Select rows from a table1": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Limit": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields1": {
+      "main": [
+        [
+          {
+            "node": "Aggregate",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Aggregate": {
+      "main": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Local Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          },
+          {
+            "node": "Structured Output Parser",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Structured Output Parser": {
+      "ai_outputParser": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_outputParser",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code in JavaScript": {
+      "main": [
+        [
+          {
+            "node": "Insert rows in a table",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Insert rows in a table": {
+      "main": [
+        [
+          {
+            "node": "Split Out1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Select rows from a table2": {
+      "main": [
+        [
+          {
+            "node": "Update rows in a table",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Loop Over Items1": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript1",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Select rows from a table2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Split Out1": {
+      "main": [
+        [
+          {
+            "node": "Loop Over Items1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Update rows in a table": {
+      "main": [
+        [
+          {
+            "node": "Loop Over Items1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Select rows from a table in Postgres": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Wait": {
+      "main": [
+        [
+          {
+            "node": "Loop Over Items",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code in JavaScript1": {
+      "main": [
+        [
+          {
+            "node": "Wait",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If1": {
+      "main": [
+        [
+          {
+            "node": "Sort",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Send a text message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Loop Over Items": {
+      "main": [
+        [],
+        [
+          {
+            "node": "Select rows from a table",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code in JavaScript2": {
+      "main": [
+        [
+          {
+            "node": "Loop Over Items",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "573db34f-248f-4d03-8a49-2c6df8b8ec63",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "c32ffc6917bdaec08035322d3990e13b4a8afc3198e79520397977dc90cc3b05"
+  },
+  "id": "bU7ObaYAZyUqrwzo",
+  "tags": []
+}

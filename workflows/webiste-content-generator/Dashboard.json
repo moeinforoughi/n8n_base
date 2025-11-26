@@ -1,0 +1,875 @@
+{
+  "name": "Article Dashboard",
+  "nodes": [
+    {
+      "parameters": {
+        "content": "## Add New Webiste",
+        "height": 224,
+        "width": 912
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        -400,
+        -144
+      ],
+      "typeVersion": 1,
+      "id": "dde4f7ca-7b56-4374-a72f-52a2415a2ea2",
+      "name": "Sticky Note"
+    },
+    {
+      "parameters": {
+        "formTitle": "Add new website",
+        "formDescription": "You could ad the information of new website here to working with it in SEO workflows",
+        "formFields": {
+          "values": [
+            {
+              "fieldLabel": "Website Name",
+              "placeholder": "AIMagazine",
+              "requiredField": true
+            },
+            {
+              "fieldLabel": "Website Base URL (Without HTTPS)",
+              "placeholder": "aimagazine.com",
+              "requiredField": true
+            },
+            {
+              "fieldLabel": "Description ( Short description about what you're doing)",
+              "placeholder": "Description",
+              "requiredField": true
+            },
+            {
+              "fieldLabel": "Sitemap URL (Without HTTPS)",
+              "placeholder": "aimagazine.com/sitemap.xml"
+            },
+            {
+              "fieldLabel": "Keywords ( Comma Separated )",
+              "placeholder": "keyword1,keyword2,...",
+              "requiredField": true
+            }
+          ]
+        },
+        "responseMode": "lastNode",
+        "options": {
+          "appendAttribution": false,
+          "respondWithOptions": {
+            "values": {
+              "formSubmittedText": "Your Website Added successfully"
+            }
+          }
+        }
+      },
+      "type": "n8n-nodes-base.formTrigger",
+      "typeVersion": 2.3,
+      "position": [
+        -336,
+        -80
+      ],
+      "id": "9a0479b3-67a4-4ec3-bcaf-9d67fe3ba11f",
+      "name": "On form submission",
+      "webhookId": "982d5bfc-9804-4c4d-8059-097c504e6c99"
+    },
+    {
+      "parameters": {
+        "schema": {
+          "__rl": true,
+          "mode": "list",
+          "value": "public"
+        },
+        "table": {
+          "__rl": true,
+          "value": "websites",
+          "mode": "list",
+          "cachedResultName": "websites"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "name": "={{ $('Edit Fields1').item.json.name }}",
+            "base_url": "={{ $('Edit Fields1').item.json.base_url }}",
+            "description": "={{ $('Edit Fields1').item.json.description }}",
+            "sitemap_url": "={{ $('Edit Fields1').item.json.sitemap_url }}",
+            "default_keywords": "={{ $json.keywords }}"
+          },
+          "matchingColumns": [
+            "id"
+          ],
+          "schema": [
+            {
+              "id": "id",
+              "displayName": "id",
+              "required": false,
+              "defaultMatch": true,
+              "display": true,
+              "type": "number",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "name",
+              "displayName": "name",
+              "required": true,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "base_url",
+              "displayName": "base_url",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "description",
+              "displayName": "description",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "sitemap_url",
+              "displayName": "sitemap_url",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "default_keywords",
+              "displayName": "default_keywords",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "object",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "created_at",
+              "displayName": "created_at",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "dateTime",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "updated_at",
+              "displayName": "updated_at",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "dateTime",
+              "canBeUsedToMatch": true,
+              "removed": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        80,
+        -80
+      ],
+      "id": "2068999f-435c-4025-816c-304671c9a1f7",
+      "name": "Insert rows in a table",
+      "credentials": {
+        "postgres": {
+          "id": "t3hKlULDb21z3SfV",
+          "name": "Postgres account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "3c585188-3a29-43a1-80dc-f3540d622623",
+              "name": "keywords",
+              "value": "={\n  \"keywords\": {{ JSON.stringify($json[\"Keywords ( Comma Separated )\"].split(',').map(k => k.trim())) }}\n}\n",
+              "type": "object"
+            },
+            {
+              "id": "7738e87f-16c3-4337-a57c-b46ae187a59b",
+              "name": "name",
+              "value": "={{ $json[\"Website Name\"] }}",
+              "type": "string"
+            },
+            {
+              "id": "562a764e-e457-436e-8f99-ea35dc7d2dd7",
+              "name": "base_url",
+              "value": "={{ $json[\"Website Base URL (Without HTTPS)\"] }}",
+              "type": "string"
+            },
+            {
+              "id": "c529a982-28ec-491d-ad58-f09d4803838b",
+              "name": "description",
+              "value": "={{ $json[\"Description ( Short description about what you're doing)\"] }}",
+              "type": "string"
+            },
+            {
+              "id": "8de6bc9d-1005-4348-b0a5-f9ff526f4dfd",
+              "name": "sitemap_url",
+              "value": "={{ $json[\"Sitemap URL (Without HTTPS)\"] }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -128,
+        -80
+      ],
+      "id": "db60faa9-d2fb-4c85-997e-6b7ce031709f",
+      "name": "Edit Fields1"
+    },
+    {
+      "parameters": {
+        "chatId": "918594803",
+        "text": "=New website added \nName :\n{{ $json.name }}\nLink :\nhttps://{{ $json.base_url }}",
+        "additionalFields": {
+          "appendAttribution": false
+        }
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        288,
+        -80
+      ],
+      "id": "719e4177-bdaf-4969-a796-0a103f3393e4",
+      "name": "Send a text message",
+      "webhookId": "b20f2bef-7dc4-4f43-b47b-656608ca7f2d",
+      "credentials": {
+        "telegramApi": {
+          "id": "Z6aMMAQUIYi0k2qT",
+          "name": "Telegram account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "content": "## Generate Keywords\n",
+        "height": 224,
+        "width": 912
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        -400,
+        96
+      ],
+      "typeVersion": 1,
+      "id": "7d3d085a-9f8f-4987-9cbb-8552d3c9454f",
+      "name": "Sticky Note1"
+    },
+    {
+      "parameters": {
+        "workflowId": {
+          "__rl": true,
+          "value": "598vo17YBtFluFdv",
+          "mode": "list",
+          "cachedResultUrl": "/workflow/598vo17YBtFluFdv",
+          "cachedResultName": "Keyword Agent"
+        },
+        "workflowInputs": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "website_id": "={{ $json['Your website ID'] }}"
+          },
+          "matchingColumns": [
+            "website_id"
+          ],
+          "schema": [
+            {
+              "id": "website_id",
+              "displayName": "website_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "number",
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": true
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.executeWorkflow",
+      "typeVersion": 1.3,
+      "position": [
+        -144,
+        160
+      ],
+      "id": "2fbbd8e9-403d-4588-a34d-38ac9d1a1719",
+      "name": "Call 'Keyword Agent'"
+    },
+    {
+      "parameters": {
+        "formTitle": "Start the keyword Generator",
+        "formDescription": "It will start the keyword generator ",
+        "formFields": {
+          "values": [
+            {
+              "fieldLabel": "Your website ID",
+              "fieldType": "number",
+              "requiredField": true
+            }
+          ]
+        },
+        "responseMode": "lastNode",
+        "options": {
+          "appendAttribution": false,
+          "respondWithOptions": {
+            "values": {
+              "formSubmittedText": "The keyword generator started"
+            }
+          }
+        }
+      },
+      "type": "n8n-nodes-base.formTrigger",
+      "typeVersion": 2.3,
+      "position": [
+        -352,
+        160
+      ],
+      "id": "99feb5a7-0e0b-43b1-828f-b0f59e61aeff",
+      "name": "On form submission1",
+      "webhookId": "5432d0a7-b393-4289-9cd4-1879562724ac"
+    },
+    {
+      "parameters": {
+        "chatId": "918594803",
+        "text": "=The keywords( seeds ) are generated this website\nID :\n{{ $('On form submission1').item.json['Your website ID'] }}",
+        "additionalFields": {
+          "appendAttribution": false
+        }
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        48,
+        160
+      ],
+      "id": "06ff0598-e14b-4218-baee-55fcf115c3d3",
+      "name": "Send a text message1",
+      "webhookId": "e0f8d913-680d-44bb-b969-cd608855389b",
+      "credentials": {
+        "telegramApi": {
+          "id": "Z6aMMAQUIYi0k2qT",
+          "name": "Telegram account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "content": "## Generate Topics\n",
+        "height": 224,
+        "width": 912
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        -400,
+        336
+      ],
+      "typeVersion": 1,
+      "id": "e2f5932e-5682-403a-ac11-048c7cfe5dd1",
+      "name": "Sticky Note2"
+    },
+    {
+      "parameters": {
+        "formTitle": "Start the Topic Generator",
+        "formDescription": "It will start the topic generator",
+        "formFields": {
+          "values": [
+            {
+              "fieldLabel": "Your website ID",
+              "fieldType": "number",
+              "requiredField": true
+            },
+            {
+              "fieldLabel": "Number of the topics you want  to generate",
+              "fieldType": "number",
+              "placeholder": "0",
+              "requiredField": true
+            }
+          ]
+        },
+        "responseMode": "lastNode",
+        "options": {
+          "appendAttribution": false,
+          "respondWithOptions": {
+            "values": {
+              "formSubmittedText": "The keyword generator started"
+            }
+          }
+        }
+      },
+      "type": "n8n-nodes-base.formTrigger",
+      "typeVersion": 2.3,
+      "position": [
+        -352,
+        400
+      ],
+      "id": "6eac20cd-44ea-4103-bf5f-3c498d190518",
+      "name": "On form submission2",
+      "webhookId": "eaa77152-68d9-4aca-a8cd-30f9d6ccb63d"
+    },
+    {
+      "parameters": {
+        "chatId": "918594803",
+        "text": "=For website with defined ID {{ $('On form submission2').item.json['Number of the topics you want  to generate'] }} generated\nID :\n{{ $('On form submission2').item.json['Your website ID'] }}",
+        "additionalFields": {
+          "appendAttribution": false
+        }
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        64,
+        400
+      ],
+      "id": "5e7942e6-9d09-4662-99c9-8f9f98404a4f",
+      "name": "Send a text message2",
+      "webhookId": "e0f8d913-680d-44bb-b969-cd608855389b",
+      "credentials": {
+        "telegramApi": {
+          "id": "Z6aMMAQUIYi0k2qT",
+          "name": "Telegram account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "workflowId": {
+          "__rl": true,
+          "value": "bU7ObaYAZyUqrwzo",
+          "mode": "list",
+          "cachedResultUrl": "/workflow/bU7ObaYAZyUqrwzo",
+          "cachedResultName": "Topic Agent"
+        },
+        "workflowInputs": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "website_id": "={{ $json['Your website ID'] }}",
+            "topic_count": "={{ $json['Number of the topics you want  to generate'] }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "website_id",
+              "displayName": "website_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "number",
+              "removed": false
+            },
+            {
+              "id": "topic_count",
+              "displayName": "topic_count",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "number",
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": true
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.executeWorkflow",
+      "typeVersion": 1.3,
+      "position": [
+        -144,
+        400
+      ],
+      "id": "babe3ab8-64db-425c-a2d4-40bbcd509051",
+      "name": "Call 'Topic Agent'"
+    },
+    {
+      "parameters": {
+        "content": "## Write Articles",
+        "height": 224,
+        "width": 672
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        528,
+        -144
+      ],
+      "typeVersion": 1,
+      "id": "9a51186d-0d28-41fc-99fa-40595775e0e2",
+      "name": "Sticky Note3"
+    },
+    {
+      "parameters": {
+        "formTitle": "Start the Article Writer",
+        "formDescription": "It will start the writer agent",
+        "formFields": {
+          "values": [
+            {
+              "fieldLabel": "Your website ID",
+              "fieldType": "number",
+              "requiredField": true
+            }
+          ]
+        },
+        "responseMode": "lastNode",
+        "options": {
+          "appendAttribution": false,
+          "respondWithOptions": {
+            "values": {
+              "formSubmittedText": "The keyword generator started"
+            }
+          }
+        }
+      },
+      "type": "n8n-nodes-base.formTrigger",
+      "typeVersion": 2.3,
+      "position": [
+        576,
+        -80
+      ],
+      "id": "547aab04-2e82-42e3-8df2-e73050e6f1a3",
+      "name": "On form submission3",
+      "webhookId": "08950b51-ead9-4e56-86b8-278a54188170"
+    },
+    {
+      "parameters": {
+        "chatId": "918594803",
+        "text": "=All topics are written\nWebsite ID :\n{{ $('On form submission3').item.json['Your website ID'] }}",
+        "additionalFields": {
+          "appendAttribution": false
+        }
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        976,
+        -80
+      ],
+      "id": "fd8ece90-6fb9-4a40-ac3e-dc21a8500ed8",
+      "name": "Send a text message3",
+      "webhookId": "e0f8d913-680d-44bb-b969-cd608855389b",
+      "credentials": {
+        "telegramApi": {
+          "id": "Z6aMMAQUIYi0k2qT",
+          "name": "Telegram account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "workflowId": {
+          "__rl": true,
+          "value": "UPFg0QgJK1cuHnBP",
+          "mode": "list",
+          "cachedResultUrl": "/workflow/UPFg0QgJK1cuHnBP",
+          "cachedResultName": "Research Agent"
+        },
+        "workflowInputs": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "website_id": "={{ $json['Your website ID'] }}"
+          },
+          "matchingColumns": [
+            "website_id"
+          ],
+          "schema": [
+            {
+              "id": "website_id",
+              "displayName": "website_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "number",
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": true
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.executeWorkflow",
+      "typeVersion": 1.3,
+      "position": [
+        784,
+        -80
+      ],
+      "id": "861bb89c-53a4-4095-9606-2ce11ff95836",
+      "name": "Call 'Research Agent'"
+    },
+    {
+      "parameters": {
+        "content": "## Publish on website",
+        "height": 224,
+        "width": 672
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        528,
+        96
+      ],
+      "typeVersion": 1,
+      "id": "c66042bc-2a4b-43c0-9593-06b1fd209a38",
+      "name": "Sticky Note4"
+    },
+    {
+      "parameters": {
+        "formTitle": "Start the Publisher",
+        "formDescription": "It will start the publisher agent",
+        "formFields": {
+          "values": [
+            {
+              "fieldLabel": "Your website ID",
+              "fieldType": "number",
+              "requiredField": true
+            }
+          ]
+        },
+        "responseMode": "lastNode",
+        "options": {
+          "appendAttribution": false,
+          "respondWithOptions": {
+            "values": {
+              "formSubmittedText": "The keyword generator started"
+            }
+          }
+        }
+      },
+      "type": "n8n-nodes-base.formTrigger",
+      "typeVersion": 2.3,
+      "position": [
+        576,
+        176
+      ],
+      "id": "5cf44ebf-bd01-400b-b6b1-d1745b7ca5c4",
+      "name": "On form submission4",
+      "webhookId": "e9d2054d-e6e0-4cff-837f-45bd644dad3a"
+    },
+    {
+      "parameters": {
+        "chatId": "918594803",
+        "text": "=For website with defined ID {{ $('On form submission4').item.json['Number of the topics you want  to generate'] }} generated\nID :\n{{ $('On form submission4').item.json['Your website ID'] }}",
+        "additionalFields": {
+          "appendAttribution": false
+        }
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        992,
+        176
+      ],
+      "id": "bfb443b9-0203-4c3a-8a47-e739c049a927",
+      "name": "Send a text message4",
+      "webhookId": "e0f8d913-680d-44bb-b969-cd608855389b",
+      "credentials": {
+        "telegramApi": {
+          "id": "Z6aMMAQUIYi0k2qT",
+          "name": "Telegram account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "workflowId": {
+          "__rl": true,
+          "value": "xwsttfw10XqVSDL0",
+          "mode": "list",
+          "cachedResultUrl": "/workflow/xwsttfw10XqVSDL0",
+          "cachedResultName": "Publisher Agent"
+        },
+        "workflowInputs": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "website_id": "={{ $json['Your website ID'] }}"
+          },
+          "matchingColumns": [
+            "website_id"
+          ],
+          "schema": [
+            {
+              "id": "website_id",
+              "displayName": "website_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "number",
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": true
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.executeWorkflow",
+      "typeVersion": 1.3,
+      "position": [
+        784,
+        176
+      ],
+      "id": "ec799c47-fde3-432a-ab11-07646acda794",
+      "name": "Call 'Publisher Agent'"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "On form submission": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields1": {
+      "main": [
+        [
+          {
+            "node": "Insert rows in a table",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Insert rows in a table": {
+      "main": [
+        [
+          {
+            "node": "Send a text message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "On form submission1": {
+      "main": [
+        [
+          {
+            "node": "Call 'Keyword Agent'",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Call 'Keyword Agent'": {
+      "main": [
+        [
+          {
+            "node": "Send a text message1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "On form submission2": {
+      "main": [
+        [
+          {
+            "node": "Call 'Topic Agent'",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Call 'Topic Agent'": {
+      "main": [
+        [
+          {
+            "node": "Send a text message2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "On form submission3": {
+      "main": [
+        [
+          {
+            "node": "Call 'Research Agent'",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Call 'Research Agent'": {
+      "main": [
+        [
+          {
+            "node": "Send a text message3",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "On form submission4": {
+      "main": [
+        [
+          {
+            "node": "Call 'Publisher Agent'",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Call 'Publisher Agent'": {
+      "main": [
+        [
+          {
+            "node": "Send a text message4",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "d2dc3a87-c599-44d4-876d-53f544988dc4",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "c32ffc6917bdaec08035322d3990e13b4a8afc3198e79520397977dc90cc3b05"
+  },
+  "id": "hEA0tPUQzDrhf7sR",
+  "tags": []
+}

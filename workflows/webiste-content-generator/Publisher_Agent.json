@@ -1,0 +1,616 @@
+{
+  "name": "Publisher Agent",
+  "nodes": [
+    {
+      "parameters": {
+        "workflowInputs": {
+          "values": [
+            {
+              "name": "website_id",
+              "type": "number"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.executeWorkflowTrigger",
+      "typeVersion": 1.1,
+      "position": [
+        -352,
+        400
+      ],
+      "id": "e105910b-c7a4-4b53-a5e3-1f846ae4fdd9",
+      "name": "When Executed by Another Workflow"
+    },
+    {
+      "parameters": {
+        "operation": "select",
+        "schema": {
+          "__rl": true,
+          "mode": "list",
+          "value": "public"
+        },
+        "table": {
+          "__rl": true,
+          "value": "articles",
+          "mode": "list",
+          "cachedResultName": "articles"
+        },
+        "limit": 1,
+        "where": {
+          "values": [
+            {
+              "column": "status",
+              "value": "new"
+            },
+            {
+              "column": "website_id",
+              "value": "={{ $json.website_id }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        96,
+        400
+      ],
+      "id": "1a5980d0-c95f-45d1-b003-d39268a574b3",
+      "name": "Select rows from a table",
+      "credentials": {
+        "postgres": {
+          "id": "t3hKlULDb21z3SfV",
+          "name": "Postgres account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=Article data :\n{{ $json.content_html }}",
+        "hasOutputParser": true,
+        "options": {
+          "systemMessage": "You are an SEO-focused publishing assistant. Your job is to transform an input JSON article object into a clean, consistent, human-readable, publication-ready HTML package. Work efficiently and avoid heavy computation.\n\n-----------------------------\nTASKS\n-----------------------------\n1. Generate \"meta_title\"\n   - 50–65 characters\n   - Clear, readable, SEO-friendly\n   - Accurately reflects the article topic\n\n2. Generate \"meta_description\"\n   - 140–160 characters\n   - Summarizes only the provided content\n   - No invented facts\n\n3. Generate \"article_html\"\n   - Convert the article into clean, valid HTML\n   - Wrap output with:\n     <div style=\"background:#ffffff; padding:28px;\">\n       ...content...\n     </div>\n   - Preserve all meaning\n   - Convert Markdown/inline HTML into proper tags\n   - Ensure correct structure: h1, h2, p, ul, ol, table, thead, tbody, tr, td, th\n\n   **Tables requirement (minimal but mandatory):**\n   - All tables must include visible borders\n   - Use:\n       <table style=\"border-collapse:collapse; width:100%;\">\n       <th/td style=\"border:1px solid #ccc; padding:6px;\">\n   - Do NOT beautify further — only add these minimal borders.\n\n   - Keep formatting consistent:\n       • One <p> per paragraph  \n       • Proper nesting of lists and headings\n\n-----------------------------\nPERFORMANCE RULES\n-----------------------------\n- No heavy rewriting\n- No searching for new info\n- No complex reasoning\n- Only structural cleanup and minimal styling for tables\n\n-----------------------------\nOUTPUT FORMAT\n-----------------------------\nReturn JSON:\n{\n  \"meta_title\": \"...\",\n  \"meta_description\": \"...\",\n  \"article_html\": \"...\"\n}\n\n-----------------------------\nGOAL\n-----------------------------\nProduce fast, lightweight, clean HTML with correct table borders and consistent structure.\n"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 2.2,
+      "position": [
+        544,
+        224
+      ],
+      "id": "2f3b5de4-7a4f-4be4-99e7-13ddad1da6a7",
+      "name": "AI Agent"
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "value": "ai/gpt-oss:20B-MXFP4",
+          "mode": "list",
+          "cachedResultName": "ai/gpt-oss:20B-MXFP4"
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.2,
+      "position": [
+        -352,
+        728
+      ],
+      "id": "e7e552a2-6587-496b-967b-efde298e7a9f",
+      "name": "OpenAI Chat Model",
+      "credentials": {
+        "openAiApi": {
+          "id": "iC5A2vdrhr3iwsfW",
+          "name": "OpenAi account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsonSchemaExample": "{\n  \"meta_title\": \"META TITLE HERE\",\n  \"meta_description\": \"META DESCRIPTION HERE\",\n  \"article_html\": \"FINAL ARTICLE HTML HERE\"\n}\n",
+        "autoFix": true
+      },
+      "type": "@n8n/n8n-nodes-langchain.outputParserStructured",
+      "typeVersion": 1.3,
+      "position": [
+        620,
+        448
+      ],
+      "id": "4c29d906-ce09-42f6-b140-0e028c58e9ac",
+      "name": "Structured Output Parser"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "typeVersion": 1,
+      "position": [
+        616,
+        656
+      ],
+      "id": "80eb8bfe-bdbe-4eaf-8137-c1abdef47c8b",
+      "name": "Google Gemini Chat Model",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "X6YVhE0LnnFGuRCi",
+          "name": "Google Gemini(PaLM) Api account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "html": "{{ $json.output.article_html }}"
+      },
+      "type": "n8n-nodes-base.html",
+      "typeVersion": 1.2,
+      "position": [
+        988,
+        128
+      ],
+      "id": "62590705-b781-4e73-8184-bf5c3ef57fc8",
+      "name": "HTML"
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "schema": {
+          "__rl": true,
+          "mode": "list",
+          "value": "public"
+        },
+        "table": {
+          "__rl": true,
+          "value": "articles",
+          "mode": "list",
+          "cachedResultName": "articles"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "id": "={{ $('Select rows from a table').item.json.id }}",
+            "meta_title": "={{ $json.output.meta_title }}",
+            "content_html": "={{ $json.output.article_html }}",
+            "meta_description": "={{ $json.output.meta_description }}",
+            "status": "optimised"
+          },
+          "matchingColumns": [
+            "id"
+          ],
+          "schema": [
+            {
+              "id": "id",
+              "displayName": "id",
+              "required": false,
+              "defaultMatch": true,
+              "display": true,
+              "type": "number",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "topic_id",
+              "displayName": "topic_id",
+              "required": true,
+              "defaultMatch": false,
+              "display": true,
+              "type": "number",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "website_id",
+              "displayName": "website_id",
+              "required": true,
+              "defaultMatch": false,
+              "display": true,
+              "type": "number",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "content_markdown",
+              "displayName": "content_markdown",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "content_html",
+              "displayName": "content_html",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "meta_title",
+              "displayName": "meta_title",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "meta_description",
+              "displayName": "meta_description",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "status",
+              "displayName": "status",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "internal_links",
+              "displayName": "internal_links",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "object",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "published_url",
+              "displayName": "published_url",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "created_at",
+              "displayName": "created_at",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "dateTime",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "updated_at",
+              "displayName": "updated_at",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "dateTime",
+              "canBeUsedToMatch": true,
+              "removed": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        988,
+        328
+      ],
+      "id": "00c2dda4-dd87-48e7-ad8f-70713ada843d",
+      "name": "Update rows in a table",
+      "credentials": {
+        "postgres": {
+          "id": "t3hKlULDb21z3SfV",
+          "name": "Postgres account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "84f0b1ca-9e5b-46ba-8ca9-ad26ccfc20ec",
+              "leftValue": "={{ $json.content_markdown }}",
+              "rightValue": "",
+              "operator": {
+                "type": "string",
+                "operation": "exists",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        320,
+        224
+      ],
+      "id": "51b2cef6-2ee2-459d-8461-36f8c0bf4fad",
+      "name": "If"
+    },
+    {
+      "parameters": {
+        "title": "={{ $('Update rows in a table').item.json.meta_title }}",
+        "additionalFields": {
+          "content": "={{ $('Update rows in a table').item.json.content_html }}",
+          "slug": "={{ $json.slug }}",
+          "status": "draft"
+        }
+      },
+      "type": "n8n-nodes-base.wordpress",
+      "typeVersion": 1,
+      "position": [
+        -352,
+        -208
+      ],
+      "id": "e434653c-b6bc-4e03-86ad-c233ee0d3067",
+      "name": "Create a post"
+    },
+    {
+      "parameters": {
+        "operation": "select",
+        "schema": {
+          "__rl": true,
+          "mode": "list",
+          "value": "public"
+        },
+        "table": {
+          "__rl": true,
+          "value": "topics",
+          "mode": "list",
+          "cachedResultName": "topics"
+        },
+        "limit": 1,
+        "where": {
+          "values": [
+            {
+              "column": "id",
+              "value": "={{ $json.topic_id }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        1212,
+        328
+      ],
+      "id": "01bd70fb-7249-4ae5-9d39-0fa0f591289a",
+      "name": "Select rows from a table1",
+      "credentials": {
+        "postgres": {
+          "id": "t3hKlULDb21z3SfV",
+          "name": "Postgres account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "function getRandomNumber(min, max) {\n  return Math.floor(Math.random() * (max - min + 1)) + min;\n}\n\nconst randomNum = getRandomNumber(15, 60);\n\nreturn [\n  {\n    json: {\n      data: randomNum\n    }\n  }\n];\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1436,
+        328
+      ],
+      "id": "f7e32dc5-ee4a-4a5b-bb58-c40a45e34051",
+      "name": "Code in JavaScript"
+    },
+    {
+      "parameters": {
+        "amount": "={{ $json.data }}",
+        "unit": "minutes"
+      },
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [
+        1660,
+        504
+      ],
+      "id": "3b769f1e-7cf5-4d1e-95f4-4b586a21e31f",
+      "name": "Wait",
+      "webhookId": "9cfb6e49-30ff-4920-a934-f2f9cbd3816b"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "3feff8f5-f2db-4c79-a5c5-1e5d1a1ba8cc",
+              "name": "website_id",
+              "value": "={{ $json.website_id }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -128,
+        400
+      ],
+      "id": "e4045660-fd36-40b9-87a4-1ba62e6a58ad",
+      "name": "Edit Fields"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "When Executed by Another Workflow": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Select rows from a table": {
+      "main": [
+        [
+          {
+            "node": "If",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI Chat Model": {
+      "ai_languageModel": [
+        []
+      ]
+    },
+    "Structured Output Parser": {
+      "ai_outputParser": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_outputParser",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Gemini Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          },
+          {
+            "node": "Structured Output Parser",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent": {
+      "main": [
+        [
+          {
+            "node": "Update rows in a table",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "HTML",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If": {
+      "main": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        []
+      ]
+    },
+    "Update rows in a table": {
+      "main": [
+        [
+          {
+            "node": "Select rows from a table1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Select rows from a table1": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code in JavaScript": {
+      "main": [
+        [
+          {
+            "node": "Wait",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Wait": {
+      "main": [
+        [
+          {
+            "node": "Select rows from a table",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields": {
+      "main": [
+        [
+          {
+            "node": "Select rows from a table",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "7dcaf647-093b-4a95-99d8-a27a99694881",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "c32ffc6917bdaec08035322d3990e13b4a8afc3198e79520397977dc90cc3b05"
+  },
+  "id": "xwsttfw10XqVSDL0",
+  "tags": []
+}

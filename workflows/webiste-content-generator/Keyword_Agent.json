@@ -1,0 +1,500 @@
+{
+  "name": "Keyword Agent",
+  "nodes": [
+    {
+      "parameters": {
+        "url": "=https://suggestqueries.google.com/complete/search?output=chrome&hl=en&q={{ $json['default_keywords.keywords'] }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        336,
+        224
+      ],
+      "id": "511e9a46-bbf5-4567-852b-4ac3b48cb130",
+      "name": "HTTP Request",
+      "retryOnFail": false,
+      "maxTries": 2
+    },
+    {
+      "parameters": {
+        "workflowInputs": {
+          "values": [
+            {
+              "name": "website_id",
+              "type": "number"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.executeWorkflowTrigger",
+      "typeVersion": 1.1,
+      "position": [
+        -1008,
+        296
+      ],
+      "id": "3e317f54-0294-442d-b966-e6b4709249b0",
+      "name": "When Executed by Another Workflow"
+    },
+    {
+      "parameters": {
+        "operation": "select",
+        "schema": {
+          "__rl": true,
+          "mode": "list",
+          "value": "public"
+        },
+        "table": {
+          "__rl": true,
+          "value": "websites",
+          "mode": "list",
+          "cachedResultName": "websites"
+        },
+        "limit": 1,
+        "where": {
+          "values": [
+            {
+              "column": "id",
+              "value": "={{ $json.website_id }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        -560,
+        296
+      ],
+      "id": "148fe895-bc52-44cb-adf1-37b0431e7911",
+      "name": "Select rows from a table",
+      "retryOnFail": false,
+      "maxTries": 2,
+      "waitBetweenTries": 1000,
+      "credentials": {
+        "postgres": {
+          "id": "t3hKlULDb21z3SfV",
+          "name": "Postgres account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "298b1b51-73ab-44a5-9f91-065a94753a1d",
+              "name": "website_id",
+              "value": "={{ $json.website_id }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -784,
+        296
+      ],
+      "id": "17e02313-a854-4e67-a408-5c87a9b51ebf",
+      "name": "Edit Fields"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "a18d3d9d-1dd8-48f7-8b02-d3be897960ec",
+              "name": "default_keywords.keywords",
+              "value": "={{ $json.default_keywords.keywords }}",
+              "type": "array"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -336,
+        296
+      ],
+      "id": "173846b7-1bb8-4730-b798-05b54f7271bd",
+      "name": "Edit Fields1"
+    },
+    {
+      "parameters": {
+        "fieldToSplitOut": "default_keywords.keywords",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.splitOut",
+      "typeVersion": 1,
+      "position": [
+        -112,
+        296
+      ],
+      "id": "10bcccfb-9309-4b06-9c46-c0ff71dc1aa0",
+      "name": "Split Out"
+    },
+    {
+      "parameters": {
+        "jsCode": "// items[n].json.data contains a string like your example\n\nconst results = [];\n\nfor (const item of items) {\n    const raw = $input.first().json.data;\n\n    // Parse the string into JSON\n    let parsed;\n    try {\n        parsed = JSON.parse(raw);\n    } catch (e) {\n        // fallback: just skip this item if parsing fails\n        continue;\n    }\n\n    // Check the structure: second element contains suggestions\n    let suggestions = [];\n    if (Array.isArray(parsed) && Array.isArray(parsed[1])) {\n        suggestions = parsed[1].map(s => s.toLowerCase().trim());\n    }\n\n    // Push each suggestion as its own item (good for DB insert)\n    suggestions.forEach(s => results.push({ json: { keyword: s } }));\n}\n\nreturn results;\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        560,
+        224
+      ],
+      "id": "af2ef62e-5970-4b58-8f92-4b2d4045608d",
+      "name": "Code in JavaScript"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "n8n-nodes-base.splitInBatches",
+      "typeVersion": 3,
+      "position": [
+        112,
+        296
+      ],
+      "id": "de793fbe-7252-47de-b75e-bd088f403c00",
+      "name": "Loop Over Items1"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "7217e122-405e-4090-a4f1-06d5dfee0c71",
+              "name": "keyword",
+              "value": "={{ $json.keyword }}",
+              "type": "string"
+            },
+            {
+              "id": "3791c74c-4192-4a0e-a0c6-a17daeeb1472",
+              "name": "source",
+              "value": "googlesuggestqueries",
+              "type": "string"
+            },
+            {
+              "id": "a9ec8705-70a9-4e1c-bcd7-b6441ae0a968",
+              "name": "website_id",
+              "value": "={{ $('Select rows from a table').item.json.id }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        784,
+        224
+      ],
+      "id": "42ed0915-5fc1-4973-a715-cec1ffcdaa43",
+      "name": "Edit Fields2"
+    },
+    {
+      "parameters": {
+        "schema": {
+          "__rl": true,
+          "mode": "list",
+          "value": "public"
+        },
+        "table": {
+          "__rl": true,
+          "value": "keywords",
+          "mode": "list",
+          "cachedResultName": "keywords"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "website_id": "={{ $json.website_id }}",
+            "keyword": "={{ $json.keyword }}",
+            "source": "={{ $json.source }}"
+          },
+          "matchingColumns": [
+            "id"
+          ],
+          "schema": [
+            {
+              "id": "id",
+              "displayName": "id",
+              "required": false,
+              "defaultMatch": true,
+              "display": true,
+              "type": "number",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "website_id",
+              "displayName": "website_id",
+              "required": true,
+              "defaultMatch": false,
+              "display": true,
+              "type": "number",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "keyword",
+              "displayName": "keyword",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "source",
+              "displayName": "source",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "created_at",
+              "displayName": "created_at",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "dateTime",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "usage_count",
+              "displayName": "usage_count",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "number",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "last_used_at",
+              "displayName": "last_used_at",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "dateTime",
+              "canBeUsedToMatch": true,
+              "removed": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        1008,
+        224
+      ],
+      "id": "6b1c9d3b-fa5e-4787-81c2-1f842647f998",
+      "name": "Insert rows in a table",
+      "retryOnFail": false,
+      "maxTries": 2,
+      "credentials": {
+        "postgres": {
+          "id": "t3hKlULDb21z3SfV",
+          "name": "Postgres account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "amount": "={{ $json.data }}",
+        "unit": "minutes"
+      },
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [
+        1456,
+        296
+      ],
+      "id": "a94cc578-db0c-42dd-80ef-258b00418e0c",
+      "name": "Wait",
+      "webhookId": "9cfb6e49-30ff-4920-a934-f2f9cbd3816b"
+    },
+    {
+      "parameters": {
+        "jsCode": "function getRandomNumber(min, max) {\n  return Math.floor(Math.random() * (max - min + 1)) + min;\n}\n\nconst randomNum = getRandomNumber(15, 60);\n\nreturn [\n  {\n    json: {\n      data: randomNum\n    }\n  }\n];\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1232,
+        224
+      ],
+      "id": "95f74854-2f08-445e-a35e-a02533cad246",
+      "name": "Code in JavaScript1"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "HTTP Request": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        []
+      ]
+    },
+    "When Executed by Another Workflow": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Select rows from a table": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields1",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        []
+      ]
+    },
+    "Edit Fields": {
+      "main": [
+        [
+          {
+            "node": "Select rows from a table",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields1": {
+      "main": [
+        [
+          {
+            "node": "Split Out",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Split Out": {
+      "main": [
+        [
+          {
+            "node": "Loop Over Items1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code in JavaScript": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Loop Over Items1": {
+      "main": [
+        [],
+        [
+          {
+            "node": "HTTP Request",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields2": {
+      "main": [
+        [
+          {
+            "node": "Insert rows in a table",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Insert rows in a table": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript1",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        []
+      ]
+    },
+    "Code in JavaScript1": {
+      "main": [
+        [
+          {
+            "node": "Wait",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Wait": {
+      "main": [
+        [
+          {
+            "node": "Loop Over Items1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "59c07590-5596-4e88-b5ae-121e63378a1e",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "c32ffc6917bdaec08035322d3990e13b4a8afc3198e79520397977dc90cc3b05"
+  },
+  "id": "598vo17YBtFluFdv",
+  "tags": []
+}
