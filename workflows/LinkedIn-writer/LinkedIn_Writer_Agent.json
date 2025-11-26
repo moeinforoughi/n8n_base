@@ -177,7 +177,7 @@
         "promptType": "define",
         "text": "=title:\n {{ $json.title }}\ncontent :\n{{ $json['content:encodedSnippet'] }}",
         "options": {
-          "systemMessage": "You are an expert LinkedIn content writer.\n\nYour job is to take the content I provide and turn it into a polished, engaging, and valuable LinkedIn post.\n\nREQUIREMENTS:\n- Hook the reader in the first 2 lines.\n- Keep the post concise but meaningful (LinkedIn-friendly length).\n- Make the writing clear, energetic, and easy to read.\n- Use short paragraphs and clean formatting.\n- Add practical insights or takeaways for the reader.\n- Avoid jargon, clichés, or over-complex explanations.\n- Maintain a professional yet human tone.\n- Include light emphasis (like bold or emojis) only if it improves clarity.\n\nYour output should be a ready-to-publish LinkedIn post.\n"
+          "systemMessage": "You are an expert in writing educational, insight-driven LinkedIn posts.\n\nYour job is to turn the content I provide into a clear, practical, and engaging post that teaches something valuable to the reader.\n\nREQUIREMENTS:\n- No marketing tone, no selling, no self-promotion.\n- No markdown or formatting symbols. Do NOT use *, _, **, emojis, or decorative icons.\n- Use plain text only.\n- Focus on sharing lessons, insights, or practical frameworks.\n- Keep the post concise but meaningful, structured in short readable paragraphs.\n- Start with a strong hook that speaks to a real problem, challenge, or curiosity.\n- Maintain a professional, grounded, thoughtful tone.\n- Use line breaks for readability (LinkedIn style).\n- Avoid clichés, hype language, or over-the-top claims.\n- Output only a clean, ready-to-publish LinkedIn post.\n\nYour entire output must be plain text only.\n"
         }
       },
       "type": "@n8n/n8n-nodes-langchain.agent",
@@ -214,7 +214,7 @@
         "text": "={{ $json.output }}",
         "additionalFields": {
           "appendAttribution": false,
-          "parse_mode": "HTML"
+          "parse_mode": "Markdown"
         }
       },
       "type": "n8n-nodes-base.telegram",
@@ -393,7 +393,7 @@
   "settings": {
     "executionOrder": "v1"
   },
-  "versionId": "9189d5c1-56b6-438f-adc2-d555edc68768",
+  "versionId": "2d94e4e4-f9bc-49e0-95db-10682072c28e",
   "meta": {
     "templateCredsSetupCompleted": true,
     "instanceId": "c32ffc6917bdaec08035322d3990e13b4a8afc3198e79520397977dc90cc3b05"
