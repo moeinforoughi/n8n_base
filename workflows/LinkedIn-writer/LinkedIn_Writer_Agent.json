@@ -1,0 +1,403 @@
+{
+  "name": "LinkedIn Writer Agent",
+  "nodes": [
+    {
+      "parameters": {
+        "url": "https://blog.devops.dev/feed",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.rssFeedRead",
+      "typeVersion": 1.2,
+      "position": [
+        -176,
+        -64
+      ],
+      "id": "9ed7b44e-b8ae-4f83-ab96-dabe4902fa61",
+      "name": "RSS Read"
+    },
+    {
+      "parameters": {
+        "url": "https://devops.com/feed/",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.rssFeedRead",
+      "typeVersion": 1.2,
+      "position": [
+        -176,
+        128
+      ],
+      "id": "b2253271-99d6-40b4-b8f6-0bd8489bbc00",
+      "name": "RSS Read1"
+    },
+    {
+      "parameters": {
+        "url": "https://www.docker.com/feed/",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.rssFeedRead",
+      "typeVersion": 1.2,
+      "position": [
+        -176,
+        320
+      ],
+      "id": "3d7578fa-02d0-4e51-8094-2209f23fb2ee",
+      "name": "RSS Read2"
+    },
+    {
+      "parameters": {
+        "url": "https://www.bestdevops.com/feed/",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.rssFeedRead",
+      "typeVersion": 1.2,
+      "position": [
+        -176,
+        -256
+      ],
+      "id": "8692669b-486e-41dc-ab83-dc76bb921dcc",
+      "name": "RSS Read3"
+    },
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {}
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        -400,
+        32
+      ],
+      "id": "c5acd035-b56f-424a-a1f8-c645062683ae",
+      "name": "Schedule Trigger"
+    },
+    {
+      "parameters": {
+        "numberInputs": 4
+      },
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3.2,
+      "position": [
+        48,
+        0
+      ],
+      "id": "c21a2719-62d5-4fa5-aa57-1c9d3f4cfa6e",
+      "name": "Merge"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=titels :\n{{ $json.title }}",
+        "options": {
+          "systemMessage": "You have to select one the best title from given titles for a LinkedIn posts I want the title that isn't so professional and complicated and also it's intersting to read and good for learning and containing new ideas \nthe output must be just the title without anything more and any changes"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 2.2,
+      "position": [
+        512,
+        400
+      ],
+      "id": "148494ef-244f-45c4-bd02-9c13639adba1",
+      "name": "AI Agent"
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "value": "ai/gpt-oss:20B-MXFP4",
+          "mode": "list",
+          "cachedResultName": "ai/gpt-oss:20B-MXFP4"
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.2,
+      "position": [
+        736,
+        560
+      ],
+      "id": "6fe575b7-53e3-452f-bf99-0d9afb4ec9dd",
+      "name": "OpenAI Chat Model",
+      "credentials": {
+        "openAiApi": {
+          "id": "iC5A2vdrhr3iwsfW",
+          "name": "OpenAi account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "fieldsToAggregate": {
+          "fieldToAggregate": [
+            {
+              "fieldToAggregate": "title"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.aggregate",
+      "typeVersion": 1,
+      "position": [
+        272,
+        400
+      ],
+      "id": "5a02092a-10fb-47e9-a412-ea6282a09551",
+      "name": "Aggregate"
+    },
+    {
+      "parameters": {
+        "mode": "combine",
+        "advanced": true,
+        "mergeByFields": {
+          "values": [
+            {
+              "field1": "title",
+              "field2": "output"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3.2,
+      "position": [
+        848,
+        32
+      ],
+      "id": "6e7b7df3-f6a6-4851-a372-f262101803c1",
+      "name": "Merge1"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=title:\n {{ $json.title }}\ncontent :\n{{ $json['content:encodedSnippet'] }}",
+        "options": {
+          "systemMessage": "You are an expert LinkedIn content writer.\n\nYour job is to take the content I provide and turn it into a polished, engaging, and valuable LinkedIn post.\n\nREQUIREMENTS:\n- Hook the reader in the first 2 lines.\n- Keep the post concise but meaningful (LinkedIn-friendly length).\n- Make the writing clear, energetic, and easy to read.\n- Use short paragraphs and clean formatting.\n- Add practical insights or takeaways for the reader.\n- Avoid jargon, clichés, or over-complex explanations.\n- Maintain a professional yet human tone.\n- Include light emphasis (like bold or emojis) only if it improves clarity.\n\nYour output should be a ready-to-publish LinkedIn post.\n"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 2.2,
+      "position": [
+        1072,
+        32
+      ],
+      "id": "e6d0d11e-afe2-488a-936b-2c1c40413f46",
+      "name": "AI Agent1"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "typeVersion": 1,
+      "position": [
+        1152,
+        256
+      ],
+      "id": "ad2b34a9-700b-41ce-95c7-1a30643c7a77",
+      "name": "Google Gemini Chat Model",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "X6YVhE0LnnFGuRCi",
+          "name": "Google Gemini(PaLM) Api account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "chatId": "918594803",
+        "text": "={{ $json.output }}",
+        "additionalFields": {
+          "appendAttribution": false,
+          "parse_mode": "HTML"
+        }
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        1424,
+        32
+      ],
+      "id": "33cb7ffb-ff06-436c-8e45-654640452ca5",
+      "name": "Send a text message",
+      "webhookId": "38f5d32e-c320-46db-991a-32463b089642",
+      "credentials": {
+        "telegramApi": {
+          "id": "Z6aMMAQUIYi0k2qT",
+          "name": "Telegram account"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Schedule Trigger": {
+      "main": [
+        [
+          {
+            "node": "RSS Read3",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "RSS Read",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "RSS Read1",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "RSS Read2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "RSS Read3": {
+      "main": [
+        [
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "RSS Read": {
+      "main": [
+        [
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "RSS Read1": {
+      "main": [
+        [
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 2
+          }
+        ]
+      ]
+    },
+    "RSS Read2": {
+      "main": [
+        [
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 3
+          }
+        ]
+      ]
+    },
+    "Merge": {
+      "main": [
+        [
+          {
+            "node": "Aggregate",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Merge1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Aggregate": {
+      "main": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent": {
+      "main": [
+        [
+          {
+            "node": "Merge1",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "Merge1": {
+      "main": [
+        [
+          {
+            "node": "AI Agent1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Gemini Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent1",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent1": {
+      "main": [
+        [
+          {
+            "node": "Send a text message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "9189d5c1-56b6-438f-adc2-d555edc68768",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "c32ffc6917bdaec08035322d3990e13b4a8afc3198e79520397977dc90cc3b05"
+  },
+  "id": "8lPqo33H9zm8JzlA",
+  "tags": []
+}
