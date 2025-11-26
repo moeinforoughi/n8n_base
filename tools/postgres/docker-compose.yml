@@ -1,0 +1,26 @@
+version: "3.8"
+services:
+  postgres:
+    image: pgvector/pgvector:pg17
+    container_name: pgvector_pg17
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: USERNAME
+      POSTGRES_PASSWORD: PASSWORD
+      POSTGRES_DB: db
+    ports:
+      - "5432:5432"
+    volumes:
+      - ./pgvector-data:/var/lib/postgresql/data
+    shm_size: "1g" # required for larger maintenance_work_mem
+  pgadmin:
+    image: dpage/pgadmin4
+    container_name: pgadmin4_container
+    restart: always
+    ports:
+      - "910:80"
+    environment:
+      PGADMIN_DEFAULT_EMAIL: EMAIL
+      PGADMIN_DEFAULT_PASSWORD: PASSWORD
+    volumes:
+      - ./pgadmin-data:/var/lib/pgadmin
