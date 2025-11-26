@@ -79,3 +79,35 @@ After running the command, wait a few moments for the container to start.
 * **Local Machine (Default):** Open http://localhost:5678 in your browser.
 * **VM/VPS (Direct IP):** Open http://SERVER_IP:5678 (e.g., http://74.56.122.50:5678).
 * **With Reverse Proxy/Domain:** Open your configured domain (e.g., https://myn8n.com).
+
+## Websites I used in Youtube stream
+
+ - Google search API :
+
+```bash
+https://serper.dev/
+```
+
+- Web page reader API :
+
+```bash
+https://jina.ai/
+```
+
+- Google AI studio :
+
+```bash
+https://aistudio.google.com/
+```
+
+- Digitalocean NGINX install guide :
+
+```bash
+https://www.digitalocean.com/community/tutorials/how-to-secure-nginx-with-let-s-encrypt-on-ubuntu-20-04
+```
+
+- CloudFlare for DNS setup:
+
+```bash
+https://dash.cloudflare.com/
+```
