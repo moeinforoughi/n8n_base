@@ -5,22 +5,22 @@ services:
     container_name: pgvector_pg17
     restart: unless-stopped
     environment:
-      POSTGRES_USER: USERNAME
-      POSTGRES_PASSWORD: PASSWORD
-      POSTGRES_DB: db
+      POSTGRES_USER: ${POSTGRES_USER:-USERNAME}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB:-db}
     ports:
-      - "5432:5432"
+      - "${POSTGRES_PORT:-5432}:5432"
     volumes:
       - ./pgvector-data:/var/lib/postgresql/data
-    shm_size: "1g" # required for larger maintenance_work_mem
+
   pgadmin:
     image: dpage/pgadmin4
     container_name: pgadmin4_container
     restart: always
     ports:
-      - "910:80"
+      - "${PGADMIN_PORT:-910}:80"
     environment:
-      PGADMIN_DEFAULT_EMAIL: EMAIL
-      PGADMIN_DEFAULT_PASSWORD: PASSWORD
+      PGADMIN_DEFAULT_EMAIL: ${PGADMIN_DEFAULT_EMAIL:-EMAIL}
+      PGADMIN_DEFAULT_PASSWORD: ${PGADMIN_DEFAULT_PASSWORD:-PASSWORD}
     volumes:
       - ./pgadmin-data:/var/lib/pgadmin

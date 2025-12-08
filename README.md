@@ -2,6 +2,13 @@
 
 This repository provides materials for setting up and running n8n using Docker Compose.
 
+
+## Youtube videos recorded for this repository
+
+* **Full setup guide video (Locally and public)**
+    * [Setup n8n (Youtube)](https://www.youtube.com/watch?v=vGJKBDlXV-w&list=PL3MmuxUbc_hLuyafXPyhTdbF4s_uNhc43&index=21)
+* **Fundamental n8n and tools**
+    * [Fundamental n8n (Youtube)](https://www.youtube.com/watch?v=KR9ApZXsV8g&list=PL3MmuxUbc_hLuyafXPyhTdbF4s_uNhc43&index=20)
 ## 1. Prerequisites
 
 You need the following installed:
